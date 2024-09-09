@@ -28,7 +28,7 @@ class btagSFProducerLatinos(Module):
         self.mode = mode
 
         self.max_abs_eta = """2.49999"""
-        self.min_pt = """20"""
+        self.min_pt = """20.0001"""
 
         self.inputFileName = pathToJson
         self.measurement_types = None
@@ -43,44 +43,8 @@ class btagSFProducerLatinos(Module):
     def runModule(self, df, values):
         ### Correctionlib JSON structure and allowed chains  # noqa: E266
         supported_algos = {
-            "deepCSV": {
-                "incl": {
-                    "inputs": ["systematic", "working_point", "flavor", "abseta", "pt"],
-                    "systematic": [
-                        "central",
-                        "down",
-                        "down_correlated",
-                        "down_uncorrelated",
-                        "up",
-                        "up_correlated",
-                        "up_uncorrelated",
-                    ],
-                    "working_point": ["L", "M", "T"],
-                    "flavor": {"b": 5, "c": 4, "udsg": 0},
-                    "abseta": "abs(Jet_eta)",
-                    "pt": "Jet_pt",
-                },
-                "shape": {
-                    "inputs": ["systematic", "working_point", "flavor", "abseta", "pt"],
-                    "systematic": [
-                        "hf",
-                        "lf",
-                        "hfstats1",
-                        "hfstats2",
-                        "lfstats1",
-                        "lfstats2",
-                        "cferr1",
-                        "cferr2",
-                    ],
-                    "working_point": ["L", "M", "T"],
-                    "flavor": {"b": 5, "c": 4, "udsg": 0},
-                    "abseta": "abs(Jet_eta)",
-                    "pt": "Jet_pt",
-                    "Discriminant": "Jet_btagDeepB",
-                },
-            },
             "deepJet": {
-                "incl": {
+                "light": {
                     "inputs": ["systematic", "working_point", "flavor", "abseta", "pt"],
                     "systematic": [
                         "central",
@@ -114,6 +78,76 @@ class btagSFProducerLatinos(Module):
                     "Discriminant": "Jet_btagDeepFlavB",
                 },
             },
+            "particleNet": {
+                "light": {
+                    "inputs": ["systematic", "working_point", "flavor", "abseta", "pt"],
+                    "systematic": [
+                        "central",
+                        "down",
+                        "down_correlated",
+                        "down_uncorrelated",
+                        "up",
+                        "up_correlated",
+                        "up_uncorrelated",
+                    ],
+                    "working_point": ["L", "M", "T"],
+                    "flavor": {"b": 5, "c": 4, "udsg": 0},
+                    "abseta": "abs(Jet_eta)",
+                    "pt": "Jet_pt",
+                },
+                "shape": {
+                    "inputs": ["systematic", "flavor", "abseta", "pt", "discriminant"],
+                    "systematic": [
+                        "hf",
+                        "lf",
+                        "hfstats1",
+                        "hfstats2",
+                        "lfstats1",
+                        "lfstats2",
+                        "cferr1",
+                        "cferr2",
+                    ],
+                    "flavor": {"b": 5, "c": 4, "udsg": 0},
+                    "abseta": "abs(Jet_eta)",
+                    "pt": "Jet_pt",
+                    "Discriminant": "Jet_btagPNetB",
+                },
+            },
+            "robustParticleTransformer": {
+                "light": {
+                    "inputs": ["systematic", "working_point", "flavor", "abseta", "pt"],
+                    "systematic": [
+                        "central",
+                        "down",
+                        "down_correlated",
+                        "down_uncorrelated",
+                        "up",
+                        "up_correlated",
+                        "up_uncorrelated",
+                    ],
+                    "working_point": ["L", "M", "T"],
+                    "flavor": {"b": 5, "c": 4, "udsg": 0},
+                    "abseta": "abs(Jet_eta)",
+                    "pt": "Jet_pt",
+                },
+                "shape": {
+                    "inputs": ["systematic", "flavor", "abseta", "pt", "discriminant"],
+                    "systematic": [
+                        "hf",
+                        "lf",
+                        "hfstats1",
+                        "hfstats2",
+                        "lfstats1",
+                        "lfstats2",
+                        "cferr1",
+                        "cferr2",
+                    ],
+                    "flavor": {"b": 5, "c": 4, "udsg": 0},
+                    "abseta": "abs(Jet_eta)",
+                    "pt": "Jet_pt",
+                    "Discriminant": "Jet_btagRobustParTAK4B",
+                },
+	    },
         }
 
         if self.algo not in supported_algos.keys():
@@ -136,12 +170,14 @@ class btagSFProducerLatinos(Module):
                         % (wp, self.algo, self.mode, self.supported_wp)
                     )
 
-        branch_algo = {"deepCSV": "Jet_btagDeepB", "deepJet": "Jet_btagDeepFlavB"}
-        branch_sfalgo = {"deepCSV": "deepcsv", "deepJet": "deepjet"}
+        print("Compute b-tag scale factors for -> Algorithm: " + self.algo + "   Mode: " + self.mode)
+
+        branch_algo = {"deepJet": "Jet_btagDeepFlavB", "particleNet": "Jet_btagPNetB", "robustParticleTransformer": "Jet_btagRobustParTAK4B"}
+        branch_sfalgo = {"deepJet": "deepjet", "particleNet": "partNet", "robustParticleTransformer": "partTransformer"}
 
         branch_name = branch_algo[self.algo]
         branch_sfname = branch_sfalgo[self.algo]
-
+        
         # define systematic uncertainties
         self.systs = []
         self.systs.append("up")
@@ -176,9 +212,10 @@ class btagSFProducerLatinos(Module):
             "cferr1",
             "cferr2",
         ] + self.jesSystsForShape
-
+        
         ### Open Json  # noqa: E266
-        cset_btag_name = f"cset_btag_{self.era}"
+        cset_btag_name = f"cset_btag_{self.era}_{self.mode}_{self.algo}"
+        cset_btag_sf_name = f"cset_btag_sf_{self.era}_{self.mode}_{self.algo}"
         if not hasattr(ROOT, cset_btag_name):
             # check if cset_btag is already defined
 
@@ -189,20 +226,20 @@ class btagSFProducerLatinos(Module):
             )
 
         ### Load the correction given algo and mode  # noqa: E266
-        if not hasattr(ROOT, "cset_btag_sf"):
+        if not hasattr(ROOT, cset_btag_sf_name):
             # check if cset_btag_sf is already defined
             s = f"""
-            correction::Correction::Ref cset_btag_sf = (correction::Correction::Ref) {cset_btag_name}->at("{self.algo}_{self.mode}");
+            correction::Correction::Ref {cset_btag_sf_name} = (correction::Correction::Ref) {cset_btag_name}->at("{self.algo}_{self.mode}");
             """
         else:
             # if already defined store the new cset_btag_sf
             s = f"""
-            cset_btag_sf = (correction::Correction::Ref) {cset_btag_name}->at("{self.algo}_{self.mode}");
+            {cset_btag_sf_name} = (correction::Correction::Ref) {cset_btag_name}->at("{self.algo}_{self.mode}");
             """
 
         ROOT.gROOT.ProcessLine(s)
 
-        suffix = f"{makeCPPString(self.min_pt)}_{makeCPPString(self.max_abs_eta)}"
+        suffix = f"{self.mode}_{self.algo}"
         getbtagSF_shape_name = f"getbtagSF_shape_{suffix}"
         getbtagSF_wp_name = f"getbtagSF_wp_name_{suffix}"
 
@@ -214,16 +251,17 @@ class btagSFProducerLatinos(Module):
                     + """
                     (std::string syst, ROOT::RVecI flav, ROOT::RVecF eta, ROOT::RVecF pt, ROOT::RVecF btag){
                         ROOT::RVecF sf(pt.size(), 1.0);
+
                         for (unsigned int i = 0, n = pt.size(); i < n; ++i) {
                                 if (pt[i]<"""
                     + self.min_pt
                     + """ || abs(eta[i])>"""
                     + self.max_abs_eta
-                    + """){continue;}
+                    + """ || btag[i]<0.0 || isnan(btag[i]) || btag[i]>19.999){continue;}
                                 if (syst.find("jes") != std::string::npos && flav[i]!=0){continue;}
                                 if (syst.find("cferr") != std::string::npos){
                                         if (flav[i]==4){
-                                                auto sf_tmp = cset_btag_sf->evaluate({syst, flav[i], abs(eta[i]), pt[i], btag[i]});
+                                                auto sf_tmp = """+cset_btag_sf_name+"""->evaluate({syst, abs(flav[i]), abs(eta[i]), pt[i], btag[i]});
                                                 sf[i] = float(sf_tmp);
                                         }else{
                                             continue;
@@ -232,11 +270,11 @@ class btagSFProducerLatinos(Module):
                                     if (flav[i]==4){
                                             continue;
                                     }else{
-                                        auto sf_tmp = cset_btag_sf->evaluate({syst, flav[i], abs(eta[i]), pt[i], btag[i]});
+                                        auto sf_tmp = """+cset_btag_sf_name+"""->evaluate({syst, abs(flav[i]), abs(eta[i]), pt[i], btag[i]});
                                         sf[i] = float(sf_tmp);
                                     }
                                 }else{
-                                    auto sf_tmp = cset_btag_sf->evaluate({syst, flav[i], abs(eta[i]), pt[i], btag[i]});
+                                    auto sf_tmp = """+cset_btag_sf_name+"""->evaluate({syst, abs(flav[i]), abs(eta[i]), pt[i], btag[i]});
                                     sf[i] = float(sf_tmp);
                                 }
                         }
@@ -249,34 +287,35 @@ class btagSFProducerLatinos(Module):
                 if central_or_syst == "central":
                     df = df.Define(
                         f"Jet_btagSF_{branch_sfname}_shape",
-                        f'{getbtagSF_shape_name}("{central_or_syst}", abs(Jet_hadronFlavour), Jet_eta, Jet_pt, {branch_name})',
+                        f'{getbtagSF_shape_name}("{central_or_syst}", Jet_hadronFlavour, Jet_eta, Jet_pt, {branch_name})',
                     )
                 else:
                     df = df.Define(
                         f"Jet_btagSF_{branch_sfname}_shape_{central_or_syst}",
-                        f'{getbtagSF_shape_name}("{central_or_syst}", abs(Jet_hadronFlavour), Jet_eta, Jet_pt, {branch_name})',
+                        f'{getbtagSF_shape_name}("{central_or_syst}", Jet_hadronFlavour, Jet_eta, Jet_pt, {branch_name})',
                     )
 
-            for syst in shape_syst:
-                df = df.Vary(
-                    f"Jet_btagSF_{branch_sfname}_shape",
-                    "std::vector<ROOT::RVecF>{Jet_btagSF_"
-                    + branch_sfname
-                    + "_shape_up_"
-                    + syst
-                    + ", Jet_btagSF_"
-                    + branch_sfname
-                    + "_shape_down_"
-                    + syst
-                    + "}",
-                    ["up", "down"],
-                    syst,
-                )
-                df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_shape_up_" + syst)
-                df = df.DropColumns(
-                    "Jet_btagSF_" + branch_sfname + "_shape_down_" + syst
-                )
-
+            ### Do we want a separated variation for b-tagging? For this moment save the variation in the nominal file -------
+            #for syst in shape_syst:
+            #    df = df.Vary(
+            #        f"Jet_btagSF_{branch_sfname}_shape",
+            #        "ROOT::RVec<ROOT::RVecF>{Jet_btagSF_"
+            #        + branch_sfname
+            #        + "_shape_up_"
+            #        + syst
+            #        + ", Jet_btagSF_"
+            #        + branch_sfname
+            #        + "_shape_down_"
+            #        + syst
+            #        + "}",
+            #        ["up", "down"],
+            #        syst,
+            #    )
+            #    df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_shape_up_" + syst)
+            #    df = df.DropColumns(
+            #        "Jet_btagSF_" + branch_sfname + "_shape_down_" + syst
+            #    )
+        
         else:
             ROOT.gInterpreter.Declare(
                 "ROOT::RVecF "
@@ -289,9 +328,9 @@ class btagSFProducerLatinos(Module):
                 + self.min_pt
                 + """ || abs(eta[i])>"""
                 + self.max_abs_eta
-                + """){continue;}
-                            auto sf_tmp = cset_btag_sf->evaluate({syst, wp, flav[i], abs(eta[i]), pt[i]});
-                            sf[i] = float(sf_tmp);
+                + """ || btag[i]<0.0){continue;}
+                        auto sf_tmp = """+cset_btag_sf_name+"""->evaluate({syst, wp, abs(flav[i]), abs(eta[i]), pt[i]});
+                        sf[i] = float(sf_tmp);
                     }
                     return sf;
                 }
@@ -302,31 +341,36 @@ class btagSFProducerLatinos(Module):
                 for central_or_syst in self.central_and_systs:
                     if central_or_syst == "central":
                         df = df.Define(
-                            f"Jet_btagSF_{branch_sfname}_{wp}",
-                            f'{getbtagSF_wp_name}("{central_or_syst}", "{wp}", abs(Jet_hadronFlavour), Jet_eta, Jet_pt)',
+                            f"Jet_btagSF_{branch_sfname}_{self.mode}_{wp}",
+                            f'{getbtagSF_wp_name}("{central_or_syst}", "{wp}", Jet_hadronFlavour, Jet_eta, Jet_pt)',
                         )
                     else:
                         df = df.Define(
-                            f"Jet_btagSF_{branch_sfname}_{wp}_{central_or_syst}",
-                            f'{getbtagSF_shape_name}("{central_or_syst}", "{wp}", abs(Jet_hadronFlavour), Jet_eta, Jet_pt)',
+                            f"Jet_btagSF_{branch_sfname}_{self.mode}_{wp}_{central_or_syst}",
+                            f'{getbtagSF_wp_name}("{central_or_syst}", "{wp}", Jet_hadronFlavour, Jet_eta, Jet_pt)',
                         )
 
-            for wp in self.selectedWPs:
-                df = df.Vary(
-                    f"Jet_btagSF_{branch_sfname}_{wp}",
-                    "ROOT::RVec<ROOT::RVecF>{Jet_btagSF_"
-                    + branch_sfname
-                    + "_"
-                    + wp
-                    + "_up, Jet_btagSF_"
-                    + branch_sfname
-                    + "_"
-                    + wp
-                    + "_down}",
-                    ["up", "down"],
-                    f"Jet_btagSF_{branch_sfname}_{wp}_variation",
-                )
-                df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_" + wp + "_up")
-                df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_" + wp + "_down")
+            ### Do we want a separated variation for b-tagging? For this moment save the variation in the nominal file ------------
+            #for wp in self.selectedWPs:
+            #    df = df.Vary(
+            #        f"Jet_btagSF_{branch_sfname}_{self.mode}_{wp}",
+            #        "ROOT::RVec<ROOT::RVecF>{Jet_btagSF_"
+            #        + branch_sfname
+            #        + "_"
+            #        + self.mode
+            #        + "_"
+            #        + wp
+            #        + "_up, Jet_btagSF_"
+            #        + branch_sfname
+            #        + "_"
+            #        + self.mode
+            #        + "_"
+            #        + wp
+            #        + "_down}",
+            #        ["up", "down"],
+            #        f"Jet_btagSF_{branch_sfname}_{self.mode}_{wp}_variation",
+            #    )
+            #    df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_" + self.mode + "_" + wp + "_up")
+            #    df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_" + self.mode + "_" + wp + "_down")
 
         return df
