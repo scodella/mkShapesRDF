@@ -317,6 +317,21 @@ class btagSFProducerLatinos(Module):
             #    )
         
         else:
+
+            print("Fixed working point scale factors not fully supported!!! Check the code <--------")
+
+            
+            ##### ADVICE: The fixed SF computation is temporary removed -----------------------------
+            ###
+            ### If we want to add fixed WP to the postprocessor we need to fine tune the workfow. Needed:
+            ###
+            ###   - Add MC efficiencies to properly compute the SF
+            ###   - Compute the SF separately for light and heavy flavour
+            ###
+            ###
+            ###
+
+            '''
             ROOT.gInterpreter.Declare(
                 "ROOT::RVecF "
                 + getbtagSF_wp_name
@@ -372,5 +387,6 @@ class btagSFProducerLatinos(Module):
             #    )
             #    df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_" + self.mode + "_" + wp + "_up")
             #    df = df.DropColumns("Jet_btagSF_" + branch_sfname + "_" + self.mode + "_" + wp + "_down")
+            '''
 
         return df
