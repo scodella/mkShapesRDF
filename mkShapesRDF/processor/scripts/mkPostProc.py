@@ -12,7 +12,8 @@ condorDir = (
 )
 
 #: eosDir is the path to use for eos submission, user might want to change it -> edit ``mkPostProc.py``
-eosDir = "/eos/cms/store/group/phys_smp/Latinos/vbfz/mkShapesRDF_nanoAOD"
+# eosDir = "/eos/cms/store/group/phys_smp/Latinos/vbfz/mkShapesRDF_nanoAOD"
+eosDir = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/"
 
 #: defaultRedirector is the redirector used to access files if the option ``--useRedirector 1`` is used, user might want to change it -> edit ``mkPostProc.py``
 defaultRedirector = "root://cms-xrd-global.cern.ch/"
