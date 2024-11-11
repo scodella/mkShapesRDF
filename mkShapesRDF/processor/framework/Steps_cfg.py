@@ -760,14 +760,23 @@ Steps = {
         "module": "jmeCalculator()",
     },
     "JES_modules_Summer22EE": {
-        "isChain": False,
-        "do4MC": True,
-        "do4Data": False,
-        "import": "mkShapesRDF.processor.modules.JMECalculator",
-        "declare": 'jmeCalculator = lambda : JMECalculator("Summer22EE_22Sep2023_V2_MC", "Summer22EEPrompt22_JRV1_MC",jet_object="AK4PFPuppi", \
-            do_Jets=True, do_MET=True, do_Unclustered=True, met_collections = ["PuppiMET", "MET", "RawMET"],do_JER=True, store_nominal=True, store_variations=True)',
-        "module": "jmeCalculator()",
+        "isChain" : False,
+        "do4MC"   : True,
+        "do4Data" : False,
+        "import"  : "mkShapesRDF.processor.modules.JMECalculator",
+        "declare" : 'jmeCalculator = lambda : JMECalculator("RPLME_FW/processor/data/jsonpog-integration/POG/JME/2022_Summer22EE/jet_jerc.json.gz", "Summer22EE_22Sep2023_V2_MC", "Summer22EE_22Sep2023_JRV1_MC", "RPLME_FW/processor/data/jsonpog-integration/POG/JME/jer_smear.json.gz", jet_object="AK4PFPuppi", jes_unc=["Total"], \
+        do_Jets=True, do_MET=True, do_Unclustered=True, met_collections = ["PuppiMET", "MET", "RawMET"],do_JER=True, store_nominal=True, store_variations=True)',
+        "module"  : "jmeCalculator()",
     },
+    # "JES_modules_Summer22EE": {
+    #     "isChain": False,
+    #     "do4MC": True,
+    #     "do4Data": False,
+    #     "import": "mkShapesRDF.processor.modules.JMECalculator",
+    #     "declare": 'jmeCalculator = lambda : JMECalculator("Summer22EE_22Sep2023_V2_MC", "Summer22EEPrompt22_JRV1_MC",jet_object="AK4PFPuppi", \
+    #         do_Jets=True, do_MET=True, do_Unclustered=True, met_collections = ["PuppiMET", "MET", "RawMET"],do_JER=True, store_nominal=True, store_variations=True)',
+    #     "module": "jmeCalculator()",
+    # },
     "l2Kin": {
         "isChain": False,
         "do4MC": True,
