@@ -2,6 +2,6 @@
 git checkout master
 git fetch
 #git pull
-git checkout run3base
+git checkout base
 git merge origin/master
 
